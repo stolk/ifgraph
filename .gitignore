@@ -1,0 +1,5 @@
+ifgraphd
+ifgraph
+*.d
+*.o
+
