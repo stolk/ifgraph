@@ -165,12 +165,12 @@ static int draw_range(int histidx, int64_t maxbw, uint32_t colour, int64_t fr, i
 	assert(fr>=0 && to>=0);
 	assert(to>=fr);
 	const int x  = imw-2-histidx;
-	const int height = y1-y0;
-	const int l0 = fr * height / maxbw;
-	const int l1 = to * height / maxbw;
-	const int y_hi = height-1-l0;
-	const int y_lo = height-1-l1;
-	for (int y=y_lo; y<=y_hi; ++y)
+	const int64_t height = y1-y0;
+	const int64_t l0 = (int64_t) (fr * 1.0f * height / maxbw + 0.5f);
+	const int64_t l1 = (int64_t) (to * 1.0f * height / maxbw + 0.5f);
+	const int64_t y_hi = height-1-l0;
+	const int64_t y_lo = height-1-l1;
+	for (int64_t y=y_lo; y<y_hi; ++y)
 		if (y>=0 && y<height)
 			im[ (y+y0) * imw + x ] = colour;
 	return l1 >= height-1;
@@ -193,7 +193,7 @@ static void draw_samples(int res, int y0, int y1)
 		memset(im + (y0+y)*imw, v, sizeof(uint32_t)*imw);
 	}
 
-	const int maxbw = graphmax[res];
+	const int64_t maxbw = graphmax[res];
 	int overflow = 0;
 	for (int x=0; x<imw-2; ++x)
 	{
@@ -237,7 +237,7 @@ static void drawloop(void)
 	int done=0;
 	do
 	{
-		usleep(100000);
+		usleep(1000000);
 
 		draw_overlay(0, 0,       imh/4);
 
