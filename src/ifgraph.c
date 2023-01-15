@@ -40,6 +40,7 @@ static int		fd_shm[MAXIF];
 static statistics_t*	statistics[MAXIF];
 
 static const int	periods[RESCNT] = { 1, 60, 60*60, 60*60*24 };
+static const char*	periodnames[RESCNT] = { "secs", "mins", "hrs", "days" };
 static uint64_t		graphmax[RESCNT];
 static uint32_t		colours_rx[MAXIF];
 static uint32_t		colours_tx[MAXIF];
@@ -101,17 +102,37 @@ static void enableRawMode()
 
 static void draw_overlay(int res, int y0, int y1)
 {
-#if 0
-	uint32_t quartermw = maxuw / 1000 / 4;
+	// Draw the Y-scale.
+	const int height = y1-y0;
+	const uint64_t maxbw = graphmax[res] / periods[res];
+	const uint64_t qmaxbw = maxbw / 4;
 	for (int i=0; i<4; ++i)
 	{
-		const int mw = (4-i) * quartermw;
-		const int val = mw >= 10000 ? mw/1000 : mw;
-		const char* units = mw >= 10000 ? "W" : "mW";
-		memset(overlay + imw * (imh/8 * i) + 1, 0, imw < 8 ? imw : 8);
-		snprintf(overlay + imw * (imh/8 * i) + 1, 80, "%d %s", val, units);
+		uint64_t bw = (4-i) * qmaxbw;
+		const char* units = "Bps";
+		if (bw >= 10000000000UL)
+		{
+			units = "GBps";
+			bw = bw / 1000000000UL;
+		}
+		else if (maxbw >= 10000000UL)
+		{
+			units = "MBps";
+			bw = bw / 1000000UL;
+		}
+		else if (maxbw >= 10000UL)
+		{
+			units = "KBps";
+			bw = bw / 1000UL;
+		}
+		memset  (overlay + imw * (y0 + height/4 * i) + 1, 0, imw < 9 ? imw : 9);
+		snprintf(overlay + imw * (y0 + height/4 * i) + 1, 20, "%u %s", (uint32_t)bw, units);
 	}
-#endif
+	// Draw the title.
+	char title[80] = {0,};
+	snprintf(title, sizeof(title), "last %d%s", imw-2, periodnames[res]);
+	int len = (int) strlen(title);
+	strncpy(overlay + imw * (y0) + (imw-len)/2, title, 20);
 }
 
 
@@ -218,9 +239,9 @@ static void drawloop(void)
 	{
 		usleep(100000);
 
-		draw_overlay(0, 0,       imh/2);
+		draw_overlay(0, 0,       imh/4);
 
-		draw_overlay(1, imh/2+1, imh-0);
+		draw_overlay(1, imh/4+1, imh/2);
 
 		draw_samples(0, 0,       imh/2);
 
