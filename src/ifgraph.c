@@ -45,6 +45,7 @@ static int		y_scale_indices[RESCNT];
 static uint32_t		colours_rx[MAXIF];
 static uint32_t		colours_tx[MAXIF];
 
+static int		selected_res = 1;
 static const uint64_t	scalebasis[] =
 {
 	15UL,
@@ -120,6 +121,7 @@ static void draw_overlay(int res, int y0, int y1)
 	// Clear the ticks on the overlay.
 	for (int y=y0; y<y1; ++y)
 		memset  (overlay + imw * y + 1, 0, imw < 9 ? imw : 9);
+	memset(overlay + y0 * imw, 0, imw);
 	// Draw the Y-scale by placing ticks.
 	const int height = y1-y0;
 	const int y_scl_idx = y_scale_indices[res];
@@ -151,9 +153,17 @@ static void draw_overlay(int res, int y0, int y1)
 	}
 	// Draw the title.
 	char title[80] = {0,};
-	snprintf(title, sizeof(title), "last %d%s", imw-2, periodnames[res]);
+	snprintf
+	(
+		title,
+		sizeof(title),
+		"last %d%s%s",
+		imw-2,
+		periodnames[res],
+		res ? " [SPACE to cyle]" :""
+	);
 	int len = (int) strlen(title);
-	strncpy(overlay + imw * (y0) + (imw-len)/2, title, 20);
+	strncpy(overlay + imw * (y0) + (imw-len)/2, title, 32);
 }
 
 
@@ -198,7 +208,7 @@ static int draw_range(int histidx, int64_t maxbw, uint32_t colour, int64_t fr, i
 }
 
 
-static void draw_samples(int res, int y0, int y1)
+static int draw_samples(int res, int y0, int y1)
 {
 	assert(y0 <= imh);
 	assert(y1 <= imh);
@@ -235,16 +245,24 @@ static void draw_samples(int res, int y0, int y1)
 				underflow = 0;
 		}
 	}
+	int rescaled = 0;
 	if (overflow)
 	{
 		if (y_scale_indices[res] < (int)NUMAXISSCALES-1)
+		{
 			y_scale_indices[res] += 1;
+			rescaled = 1;
+		}
 	}
 	else if (underflow)
 	{
 		if (y_scale_indices[res] > 0)
+		{
 			y_scale_indices[res] -= 1;
+			rescaled = 1;
+		}
 	}
+	return rescaled;
 }
 
 
@@ -286,23 +304,33 @@ static void drawloop(void)
 	int done=0;
 	do
 	{
-		usleep(1000000);
+		const int resA = 0;
+		const int resB = selected_res;
 
-		draw_overlay(0, 0,       imh/4);
+		draw_overlay(resA, 0,       imh/4);
+		draw_overlay(resB, imh/4+1, imh/2);
 
-		draw_overlay(1, imh/4+1, imh/2);
-
-		draw_samples(0, 0,       imh/2);
-
-		draw_samples(1, imh/2+2, imh-0);
+		int rescaled = 0;
+		rescaled += draw_samples(resA, 0,       imh/2);
+		rescaled += draw_samples(resB, imh/2+2, imh-0);
 
 		update_image();
 
 		// See if user pressed ESC.
 		char c=0;
 		const int numr = read( STDIN_FILENO, &c, 1 );
-		if ( numr == 1 && ( c == 27 || c == 'q' || c == 'Q' ) )
-			done=1;
+		if (numr == 1)
+		{
+			if (c == 27 || c == 'q' || c == 'Q' )
+				done=1;
+			if (c == ' ')
+			{
+				selected_res += 1;
+				selected_res = selected_res >= RESCNT ? 1 : selected_res;
+			}
+		}
+
+		usleep(rescaled ? 50000 : 1000000);
 	} while(!done);
 
 	grapher_exit();
