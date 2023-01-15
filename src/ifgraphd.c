@@ -103,7 +103,7 @@ static int unlink_shared_memory_blocks(void)
 	for (int i=0; i<numif; ++i)
 	{
 		char nm[128] = {0,};
-		snprintf(nm, sizeof(nm)-1, "/ifgraph-%s", ifnames[i]);
+		snprintf(nm, sizeof(nm)-1, SHM_NAME_FMT, ifnames[i]);
 		if (fd_shm[i])
 		{
 			if (statistics[i])
@@ -128,7 +128,7 @@ static int create_shared_memory_blocks(void)
 	for (int i=0; i<numif; ++i)
 	{
 		char nm[128] = {0,};
-		snprintf(nm, sizeof(nm)-1, "/ifgraph-%s", ifnames[i]);
+		snprintf(nm, sizeof(nm)-1, SHM_NAME_FMT, ifnames[i]);
 		fd_shm[i] = shm_open(nm, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
 		if (!fd_shm[i])
 			fprintf(stderr, "shm_open failed for %s: %s\n", nm, strerror(errno));
@@ -158,7 +158,7 @@ static void service(void)
 	while(1)
 	{
 		record();
-		usleep(100000);	// test with 100ms, todo; should be timed 1s ticks.
+		usleep(1000000);
 	}
 }
 
@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
 			{
 				if (!strcmp(candidates[j], name))
 				{
-					strncpy(ifnames[numif], candidates[j], sizeof(ifnames[numif]-1));
+					strncpy(ifnames[numif], candidates[j], sizeof(ifnames[numif]) - 1);
 					numif += 1;
 				}
 			}
@@ -231,7 +231,14 @@ int main(int argc, char* argv[])
 	}
 	if (!numif)
 	{
-		fprintf(stderr, "No eligable interfaces.\n");
+		if (argc>1)
+		{
+			fprintf(stderr, "No interface selected. Candidates are:\n");
+			for (int i=0; i<numcand; ++i)
+				fprintf(stderr, "%s\n", candidates[i]);
+		}
+		else
+			fprintf(stderr, "No interfaces found.\n");
 		exit(3);
 	}
 

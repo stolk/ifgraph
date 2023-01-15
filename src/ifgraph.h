@@ -9,6 +9,8 @@
 
 #define MAXIF	32		// no more than 32 network devices.
 
+#define SHM_NAME_FMT	"/ifgraph-%s"
+
 enum {
 	RES_SC=0,	// sample per second.
 	RES_MN,		// sample per minute.
