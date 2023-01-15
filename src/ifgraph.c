@@ -117,15 +117,19 @@ static void enableRawMode()
 
 static void draw_overlay(int res, int y0, int y1)
 {
-	// Draw the Y-scale.
+	// Clear the ticks on the overlay.
+	for (int y=y0; y<y1; ++y)
+		memset  (overlay + imw * y + 1, 0, imw < 9 ? imw : 9);
+	// Draw the Y-scale by placing ticks.
 	const int height = y1-y0;
 	const int y_scl_idx = y_scale_indices[res];
 	const uint64_t yscl = axisscales[y_scl_idx];
 	const uint64_t maxbw = yscl;
-	const uint64_t qmaxbw = maxbw / 4;
-	for (int i=0; i<4; ++i)
+	int numbands = maxbw % 3 == 0 ? 3 : 4;
+	const uint64_t bandsz = maxbw / numbands;
+	for (int i=0; i<numbands; ++i)
 	{
-		uint64_t bw = (4-i) * qmaxbw;
+		uint64_t bw = (numbands-i) * bandsz;
 		const char* units = "Bps";
 		if (bw >= 10000000000UL)
 		{
@@ -142,8 +146,8 @@ static void draw_overlay(int res, int y0, int y1)
 			units = "KBps";
 			bw = bw / 1000UL;
 		}
-		memset  (overlay + imw * (y0 + height/4 * i) + 1, 0, imw < 9 ? imw : 9);
-		snprintf(overlay + imw * (y0 + height/4 * i) + 1, 20, "%u %s", (uint32_t)bw, units);
+		const int tloc = y0 + (i * height) / numbands;
+		snprintf(overlay + imw * tloc + 1, 20, "%u %s", (uint32_t)bw, units);
 	}
 	// Draw the title.
 	char title[80] = {0,};
@@ -181,12 +185,12 @@ static int draw_range(int histidx, int64_t maxbw, uint32_t colour, int64_t fr, i
 {
 	assert(fr>=0 && to>=0);
 	assert(to>=fr);
-	const int x  = imw-2-histidx;
+	const int x  = (imw-1) - 1 - histidx;
 	const int64_t height = y1-y0;
 	const int64_t l0 = (int64_t) (fr * 1.0f * height / maxbw + 0.5f);
 	const int64_t l1 = (int64_t) (to * 1.0f * height / maxbw + 0.5f);
-	const int64_t y_hi = height-1-l0;
-	const int64_t y_lo = height-1-l1;
+	const int64_t y_hi = height-l0;
+	const int64_t y_lo = height-l1;
 	for (int64_t y=y_lo; y<y_hi; ++y)
 		if (y>=0 && y<height)
 			im[ (y+y0) * imw + x ] = colour;
@@ -204,16 +208,16 @@ static void draw_samples(int res, int y0, int y1)
 	// Clear the background with dark grey bands.
 	const uint8_t blck = 0x12;
 	const uint8_t grey = 0x1f;
+	const int y_scl_idx = y_scale_indices[res];
+	const uint64_t maxbw = axisscales[y_scl_idx];
+	int numbands = maxbw % 3 == 0 ? 3 : 4;
 	for (int y=0; y<height; ++y)
 	{
-		const uint8_t v = ( ((y*4) / height) & 1 ) ? grey : blck;
+		const uint8_t v = ( ((y*numbands) / height) & 1 ) ? grey : blck;
 		memset(im + (y0+y)*imw, v, sizeof(uint32_t)*imw);
 	}
 
-	const int y_scale_idx = y_scale_indices[res];
-	const uint64_t maxbw  = axisscales[y_scale_idx];
 	const uint64_t maxval = maxbw * periods[res];
-
 	int overflow = 0;
 	int underflow = 1;
 	for (int x=0; x<imw-2; ++x)
@@ -290,7 +294,7 @@ static void drawloop(void)
 
 		draw_samples(0, 0,       imh/2);
 
-		draw_samples(1, imh/2+1, imh-0);
+		draw_samples(1, imh/2+2, imh-0);
 
 		update_image();
 
