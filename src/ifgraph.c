@@ -41,9 +41,24 @@ static statistics_t*	statistics[MAXIF];
 
 static const int	periods[RESCNT] = { 1, 60, 60*60, 60*60*24 };
 static const char*	periodnames[RESCNT] = { "secs", "mins", "hrs", "days" };
-static uint64_t		graphmax[RESCNT];
+static int		y_scale_indices[RESCNT];
 static uint32_t		colours_rx[MAXIF];
 static uint32_t		colours_tx[MAXIF];
+
+static const uint64_t	scalebasis[] =
+{
+	15UL,
+	20UL,
+	30UL,
+	40UL,
+	60UL,
+	80UL,
+	100UL,
+};
+#define ORDERS_OF_MAGNITUDE_IN_SCALING	10	// Supports 100Gbps scale.
+#define BASISLEN (sizeof(scalebasis) / sizeof(uint64_t))
+#define NUMAXISSCALES (ORDERS_OF_MAGNITUDE_IN_SCALING * BASISLEN)
+static uint64_t		axisscales[NUMAXISSCALES];
 
 
 // At the bottom of the screen we will place a line containing the legend for the graph.
@@ -104,7 +119,9 @@ static void draw_overlay(int res, int y0, int y1)
 {
 	// Draw the Y-scale.
 	const int height = y1-y0;
-	const uint64_t maxbw = graphmax[res] / periods[res];
+	const int y_scl_idx = y_scale_indices[res];
+	const uint64_t yscl = axisscales[y_scl_idx];
+	const uint64_t maxbw = yscl;
 	const uint64_t qmaxbw = maxbw / 4;
 	for (int i=0; i<4; ++i)
 	{
@@ -193,8 +210,12 @@ static void draw_samples(int res, int y0, int y1)
 		memset(im + (y0+y)*imw, v, sizeof(uint32_t)*imw);
 	}
 
-	const int64_t maxbw = graphmax[res];
+	const int y_scale_idx = y_scale_indices[res];
+	const uint64_t maxbw  = axisscales[y_scale_idx];
+	const uint64_t maxval = maxbw * periods[res];
+
 	int overflow = 0;
+	int underflow = 1;
 	for (int x=0; x<imw-2; ++x)
 	{
 		uint64_t cumul = 0;
@@ -203,20 +224,44 @@ static void draw_samples(int res, int y0, int y1)
 			const uint16_t idx = (statistics[i]->wr[res] - x) & HISTMSK;
 			uint64_t rx = statistics[i]->rx[res][idx];
 			uint64_t tx = statistics[i]->tx[res][idx];
-			overflow += draw_range(x, maxbw, colours_tx[i], cumul+0,  cumul+tx,    y0, y1);
-			overflow += draw_range(x, maxbw, colours_rx[i], cumul+tx, cumul+tx+rx, y0, y1);
+			overflow += draw_range(x, maxval, colours_tx[i], cumul+0,  cumul+tx,    y0, y1);
+			overflow += draw_range(x, maxval, colours_rx[i], cumul+tx, cumul+tx+rx, y0, y1);
 			cumul += (rx+tx);
+			if (cumul > maxval/2)
+				underflow = 0;
 		}
 	}
 	if (overflow)
-		graphmax[res] *= 2;
+	{
+		if (y_scale_indices[res] < (int)NUMAXISSCALES-1)
+			y_scale_indices[res] += 1;
+	}
+	else if (underflow)
+	{
+		if (y_scale_indices[res] > 0)
+			y_scale_indices[res] -= 1;
+	}
 }
 
 
 static void prepare_drawing(void)
 {
-	for (int res=0; res<RESCNT; ++res)
-		graphmax[res] = 4000 * periods[res];
+	// Set up scaling for Y-axis, that needs to range between 15bps and 100Gbps.
+	// We want "neat" numbers at the axis ticks.
+	uint64_t mult = 1UL;
+	int writer = 0;
+	for (int o=0; o<ORDERS_OF_MAGNITUDE_IN_SCALING; ++o)
+	{
+		for (uint32_t i=0; i<BASISLEN; ++i)
+			axisscales[writer++] = mult * scalebasis[i];
+		mult *= 10UL;
+	}
+	assert(writer == NUMAXISSCALES);
+	y_scale_indices[0] = 15;
+	y_scale_indices[1] = 15;
+	y_scale_indices[2] = 15;
+	y_scale_indices[3] = 15;
+
 	choose_colours();
 	set_postscript();
 	int result = grapher_init();

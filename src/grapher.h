@@ -7,7 +7,7 @@ extern int imh;
 extern uint32_t* im;
 extern char* overlay;
 
-extern char postscript[256];
+extern char postscript[320];
 
 extern int grapher_resized;
 
