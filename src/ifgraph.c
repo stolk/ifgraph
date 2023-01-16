@@ -160,7 +160,7 @@ static void draw_overlay(int res, int y0, int y1)
 		"last %d%s%s",
 		imw-2,
 		periodnames[res],
-		res ? " [SPACE to cyle]" :""
+		res ? " [SPACE to cycle]" :""
 	);
 	int len = (int) strlen(title);
 	strncpy(overlay + imw * (y0) + (imw-len)/2, title, 32);
