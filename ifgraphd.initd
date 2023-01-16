@@ -6,7 +6,6 @@ depend() {
 }
 
 command="/usr/local/bin/ifgraphd"
-command_args="-d"
 pidfile="/var/run/ifgraphd.pid"
 command_background=true
 command_user=root
