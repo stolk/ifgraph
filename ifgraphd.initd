@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+
+depend() {
+	need net
+	after firewall
+}
+
+command="/usr/local/bin/ifgraphd"
+command_args="-d"
+pidfile="/var/run/ifgraphd.pid"
+command_background=true
+command_user=root
+command_group=root
+command_umask=022
+command_nice=19
+command_timeout=60

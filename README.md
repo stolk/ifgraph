@@ -29,6 +29,8 @@ This enables you to quickly see what the traffic volume is on your WAN, your LAN
 This tool has zero dependencies.
 Just type `make` on the command line.
 
+
+
 # Usage
 
 The tool comes in two parts, each of which is a simple C program:
@@ -53,6 +55,28 @@ To view the data that has been recorded, you launch the front end in a terminal 
 
 ```
 ./ifgraph
+```
+
+# Make targets 
+
+```sh 
+make all
+sudo make install
+ifgraphd
+
+# or 
+sudo make systemd
+
+# or
+sudo make initd
+
+#finaly
+ifgraph 
+
+sudo make unsystemd
+sudo make uninitd
+sudo make uninstall
+make clean
 ```
 
 # Author
