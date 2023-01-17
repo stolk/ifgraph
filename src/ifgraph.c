@@ -32,6 +32,7 @@
 // The candidates for network interfaces which we can analyze.
 static int		numcand=0;
 static char		candidates[MAXIF][32];
+static int		maskedcandidates[MAXIF];
 
 // The actual interfaces that we analyze.
 static int		numif=0;
@@ -385,9 +386,24 @@ int main(int argc, char* argv[])
 		}
 	} while(entry && numcand < MAXIF);
 
+	// The set of network interfaces may have been limited on the command line.
+	if (argc>1)
+	{
+		memset(maskedcandidates, 1, sizeof(maskedcandidates));
+		for (int i=1; i<argc; ++i)
+		{
+			const char* ifname = argv[i];
+			for (int j=0; j<numcand; ++j)
+				if (!strcmp(ifname, candidates[j]))
+					maskedcandidates[j] = 0; // Mark as one of the candidates we use.
+		}
+	}
+
 	// See which of the candidate interfaces have readable shared memory blocks for it.
 	for (int i=0; i<numcand; ++i)
 	{
+		if (maskedcandidates[i])
+			continue;
 		const char* name = candidates[i];
 		char shm_nm[80] = {0,};
 		snprintf(shm_nm, sizeof(shm_nm), SHM_NAME_FMT, name);
