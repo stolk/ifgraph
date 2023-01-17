@@ -55,6 +55,20 @@ To view the data that has been recorded, you launch the front end in a terminal 
 ./ifgraph
 ```
 
+As with the back-end, the front-end also takes optional arguments: the interface names you want to graph.
+This set of names needs to be a subset of the names that you are recording with the back-end.
+
+# Installation
+
+For Debian and Ubuntu you can use the `make install` target to create a systemd service.
+
+To start the service:
+
+```
+$ systemctl start ifgraph
+$ systemctl status ifgraph
+```
+
 # Author
 
 The ifgraph tool is (c)2023 by Bram Stolk
