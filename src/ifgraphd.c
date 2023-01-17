@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "ifgraph.h"
 
@@ -129,7 +130,7 @@ static int create_shared_memory_blocks(void)
 	{
 		char nm[128] = {0,};
 		snprintf(nm, sizeof(nm)-1, SHM_NAME_FMT, ifnames[i]);
-		fd_shm[i] = shm_open(nm, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+		fd_shm[i] = shm_open(nm, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 		if (!fd_shm[i])
 			fprintf(stderr, "shm_open failed for %s: %s\n", nm, strerror(errno));
 		else
@@ -176,6 +177,29 @@ static void prepare_service(void)
 			previous_rx[i][r] = previous_rx[i][0];
 			previous_tx[i][r] = previous_tx[i][0];
 		}
+	}
+}
+
+
+static void cleanup(void)
+{
+	const int numunlinked = unlink_shared_memory_blocks();
+	if (numunlinked != numif)
+		fprintf(stderr, "Not all shared memory blocks were unlinked?\n");
+	else
+		fprintf(stderr, "Unlinked %d shared memory blocks.\n", numunlinked);
+}
+
+
+static void sig_handler(int signum)
+{
+	if (signum == SIGHUP)
+	{
+	}
+	if (signum == SIGTERM || signum == SIGINT)
+	{
+		cleanup();
+		exit(0);
 	}
 }
 
@@ -267,6 +291,10 @@ int main(int argc, char* argv[])
 	for (int i=0; i<numif; ++i)
 		fprintf(stderr,"%s%c", ifnames[i], i==numif-1 ? '\n' : ' ');
 
+	signal(SIGINT,  sig_handler);
+	signal(SIGTERM, sig_handler);
+	signal(SIGHUP,  sig_handler);
+
 	const int numcreated = create_shared_memory_blocks();
 	if (numcreated == numif)
 	{
@@ -274,9 +302,7 @@ int main(int argc, char* argv[])
 		service();
 	}
 
-	const int numunlinked = unlink_shared_memory_blocks();
-	if (numunlinked != numif)
-		fprintf(stderr, "Not all shared memory blocks were unlinked?\n");
+	cleanup();
 
 	return 0;
 }
