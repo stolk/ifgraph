@@ -1,0 +1,5 @@
+ifgraph (1.0-1) kinetic; urgency=medium
+
+  * Initial release.
+
+ -- Bram Stolk <bram.stolk@canonical.com>  Mon, 16 Jan 2023 20:29:16 -0800

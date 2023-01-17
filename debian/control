@@ -1,0 +1,15 @@
+Source: ifgraph
+Section: contrib/utils
+Priority: optional
+Maintainer: Bram Stolk <bram.stolk@canonical.com>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13)
+Standards-Version: 4.6.1
+Homepage: https://github.com/stolk/ifgraph
+
+Package: ifgraph
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Records and graphs the bandwidth use of network interfaces using the /sys filesystem.
+ Uses a back-end daemon to record, and a front-end visualization using a text terminal that supports 24bit color.
