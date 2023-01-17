@@ -1,0 +1,13 @@
+[Unit]
+Description=igraph service
+After=network.target
+
+[Service]
+Type=simple
+User=daemon
+ExecStart=/usr/bin/ifgraphd
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target
+
