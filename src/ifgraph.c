@@ -354,12 +354,6 @@ static void cleanup(void)
 
 int main(int argc, char* argv[])
 {
-	if (argc != 1)
-	{
-		fprintf(stderr, "%s takes no arguments.\n", argv[0]);
-		exit(1);
-	}
-
 	const char* dname = "/sys/class/net";
 
 	// Determine all candidate network interfaces.
