@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "readdir() failed for %s: %s\n", dname, strerror(errno));
 			exit(2);
 		}
-		else if (entry && (entry->d_type & DT_LNK))
+		else if (entry && (entry->d_type & DT_LNK) && strcmp(entry->d_name, "lo"))
 		{
 			strncpy(candidates[numcand], entry->d_name, sizeof(candidates[numcand]) - 1);
 			numcand++;
