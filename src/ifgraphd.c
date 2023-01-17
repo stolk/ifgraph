@@ -130,7 +130,8 @@ static int create_shared_memory_blocks(void)
 	{
 		char nm[128] = {0,};
 		snprintf(nm, sizeof(nm)-1, SHM_NAME_FMT, ifnames[i]);
-		fd_shm[i] = shm_open(nm, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
+		const mode_t filemod = S_IRUSR | S_IWUSR | S_IRGRP |  S_IROTH;
+		fd_shm[i] = shm_open(nm, O_CREAT | O_RDWR | O_TRUNC, filemod);
 		if (!fd_shm[i])
 			fprintf(stderr, "shm_open failed for %s: %s\n", nm, strerror(errno));
 		else
