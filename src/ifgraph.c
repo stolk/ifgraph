@@ -228,6 +228,19 @@ static int draw_samples(int res, int y0, int y1)
 		memset(im + (y0+y)*imw, v, sizeof(uint32_t)*imw);
 	}
 
+	// Delineate the minutes/hours/days in the second/minute/hour graphs.
+	if (res != 3)
+	{
+		const int boundary = res == 2 ? 24 : 60;
+		for (int t=0; t<imw-2; ++t)
+			if (t % boundary == 0)
+			{
+				const int x = imw - 1 - 1 - t;
+				for (int y=y0; y<y1; y+=2)
+					im[ y * imw + x ] = 0x303030;
+			}
+	}
+
 	const uint64_t maxval = maxbw * periods[res];
 	int overflow = 0;
 	int underflow = 1;
