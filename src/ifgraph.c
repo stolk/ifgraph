@@ -133,20 +133,20 @@ static void draw_overlay(int res, int y0, int y1)
 	for (int i=0; i<numbands; ++i)
 	{
 		uint64_t bw = (numbands-i) * bandsz;
-		const char* units = "Bps";
+		const char* units = "bps";
 		if (bw >= 10000000000UL)
 		{
-			units = "GBps";
+			units = "Gbps";
 			bw = bw / 1000000000UL;
 		}
 		else if (maxbw >= 10000000UL)
 		{
-			units = "MBps";
+			units = "Mbps";
 			bw = bw / 1000000UL;
 		}
 		else if (maxbw >= 10000UL)
 		{
-			units = "KBps";
+			units = "Kbps";
 			bw = bw / 1000UL;
 		}
 		const int tloc = y0 + (i * height) / numbands;
@@ -250,8 +250,8 @@ static int draw_samples(int res, int y0, int y1)
 		for (int i=0; i<numif; ++i)
 		{
 			const uint16_t idx = (statistics[i]->wr[res] - x) & HISTMSK;
-			uint64_t rx = statistics[i]->rx[res][idx];
-			uint64_t tx = statistics[i]->tx[res][idx];
+			uint64_t rx = statistics[i]->rx[res][idx] * 8;
+			uint64_t tx = statistics[i]->tx[res][idx] * 8;
 			overflow += draw_range(x, maxval, colours_tx[i], cumul+0,  cumul+tx,    y0, y1);
 			overflow += draw_range(x, maxval, colours_rx[i], cumul+tx, cumul+tx+rx, y0, y1);
 			cumul += (rx+tx);
@@ -293,10 +293,10 @@ static void prepare_drawing(void)
 		mult *= 10UL;
 	}
 	assert(writer == NUMAXISSCALES);
-	y_scale_indices[0] = 15;
-	y_scale_indices[1] = 15;
-	y_scale_indices[2] = 15;
-	y_scale_indices[3] = 15;
+	y_scale_indices[0] = 20;
+	y_scale_indices[1] = 20;
+	y_scale_indices[2] = 20;
+	y_scale_indices[3] = 20;
 
 	choose_colours();
 	set_postscript();
