@@ -27,7 +27,7 @@ int imh = 0;
 uint32_t* im = 0;
 char* overlay = 0;
 
-char postscript[320];
+char postscript[400];
 
 int grapher_resized = 1;
 

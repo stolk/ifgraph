@@ -71,14 +71,14 @@ static void set_postscript(void)
 	{
 		strncat(postscript, SETFG "255;255;255m", sizeof(postscript) - 1 - strlen(postscript));
 		strncat(postscript, ifnames[i], sizeof(postscript) - 1 - strlen(postscript));
-		strncat(postscript, ": ", sizeof(postscript) - 1 - strlen(postscript));
+		strncat(postscript, ":", sizeof(postscript) - 1 - strlen(postscript));
 		char legend_rx[60] = {0,};
 		char legend_tx[60] = {0,};
 		snprintf
 		(
 			legend_rx,
 			sizeof(legend_rx) - 1,
-			SETFG "%hhu;%hhu;%hhumRX ",
+			SETFG "%hhu;%hhu;%hhumRX" SETFG "99;99;99m" "/",
 			(colours_rx[i]>> 0)&0xff,
 			(colours_rx[i]>> 8)&0xff,
 			(colours_rx[i]>>16)&0xff
