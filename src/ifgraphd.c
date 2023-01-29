@@ -226,10 +226,16 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "readdir() failed for %s: %s\n", dname, strerror(errno));
 			exit(2);
 		}
-		else if (entry && (entry->d_type & DT_LNK) && strcmp(entry->d_name, "lo"))
+		else if (entry && (entry->d_type & DT_LNK))
 		{
-			strncpy(candidates[numcand], entry->d_name, sizeof(candidates[numcand]) - 1);
-			numcand++;
+			const char* name = entry->d_name;
+			const int is_lo  = strncmp(name, "lo", 2) == 0 ? 1 : 0;
+			const int is_br  = strncmp(name, "br", 2) == 0 ? 1 : 0;
+			if (!is_lo && !is_br) // Don't want loopbacks or bridges.
+			{
+				strncpy(candidates[numcand], name, sizeof(candidates[numcand]) - 1);
+				numcand++;
+			}
 		}
 	} while(entry && numcand < MAXIF);
 
