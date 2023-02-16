@@ -388,8 +388,12 @@ int main(int argc, char* argv[])
 		}
 		else if (entry && (entry->d_type & DT_LNK))
 		{
-			strncpy(candidates[numcand], entry->d_name, sizeof(candidates[numcand]) - 1);
-			numcand++;
+			const int is_vl  = strncmp(entry->d_name, "vlan", 4) == 0 ? 1 : 0;
+			if (!is_vl)
+			{
+				strncpy(candidates[numcand], entry->d_name, sizeof(candidates[numcand]) - 1);
+				numcand++;
+			}
 		}
 	} while(entry && numcand < MAXIF);
 
