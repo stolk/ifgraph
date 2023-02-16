@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 			const int is_lo  = strncmp(name, "lo", 2) == 0 ? 1 : 0;
 			const int is_br  = strncmp(name, "br", 2) == 0 ? 1 : 0;
 			const int is_ma  = strncmp(name, "bonding_masters", 15) == 0 ? 1: 0;
-			const int is_vl  = strncmp(name, "vlan", 4) == 0 ? 1 : 0;
+			const int is_vl  = strncmp(name, "veth", 4) == 0 ? 1 : 0;
 			if (!is_lo && !is_br && !is_ma && !is_vl) // Don't want loopbacks, bridges, masters or vlans.
 			{
 				strncpy(candidates[numcand], name, sizeof(candidates[numcand]) - 1);
