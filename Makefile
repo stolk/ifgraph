@@ -22,7 +22,7 @@ ifgraphd: src/ifgraphd.o
 
 # Front-end binary
 ifgraph: src/ifgraph.o src/grapher.o
-	$(CC) -o $@ $^ -lrt
+	$(CC) -o $@ $^ -lrt -lm
 
 clean:
 	rm -f src/*.o ifgraphd ifgraph
@@ -48,7 +48,7 @@ tarball:
 # upload the source package to the author's personal package archive.
 packageupload:
 	debuild -S
-	dput ppa:b-stolk/ppa ../energygraph_1.0-1_source.changes
+	dput ppa:b-stolk/ppa ../ifgraph_1.0-1_source.changes
 
 # automatically generated dependencies.
 -include $(src/ifgraphd.d src/ifgraph.d src/grapher.d)
