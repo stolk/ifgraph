@@ -1,3 +1,9 @@
+ifgraph (1.1-1) plucky; urgency=medium
+
+  * Remove libm dependency.
+
+ -- Bram Stolk <b.stolk@gmail.com>  Sun, 25 May 2025 14:14:44 -0700
+
 ifgraph (1.0-1) kinetic; urgency=medium
 
   * Initial release.

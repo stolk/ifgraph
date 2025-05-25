@@ -16,7 +16,7 @@ static __inline__ void hsv_to_rgb
 		return;
 	}
 	h *= 6.0f;			// sector 0 to 5
-	int i = floor( h );
+	int i = (int) h;
 	float f = h - i;		// factorial part of h
 	float p = v * ( 1.0f - s );
 	float q = v * ( 1.0f - s * f );

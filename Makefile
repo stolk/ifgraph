@@ -25,7 +25,7 @@ ifgraph: src/ifgraph.o src/grapher.o
 	$(CC) -o $@ $^ -lrt -lm
 
 clean:
-	rm -f src/*.o ifgraphd ifgraph
+	rm -f src/*.d src/*.o ifgraphd ifgraph
 
 dist-clean: clean
 	rm -f src/*.d
@@ -43,12 +43,12 @@ uninstall:
 
 # debuild needs an original tar ball to work off.
 tarball:
-	tar cvzf ../ifgraph_1.0.orig.tar.gz $(DISTFILES)
+	tar cvzf ../ifgraph_1.1.orig.tar.gz $(DISTFILES)
 
 # upload the source package to the author's personal package archive.
 packageupload:
 	debuild -S
-	dput ppa:b-stolk/ppa ../ifgraph_1.0-1_source.changes
+	dput ppa:b-stolk/ppa ../ifgraph_1.1-1_source.changes
 
 # automatically generated dependencies.
 -include $(src/ifgraphd.d src/ifgraph.d src/grapher.d)
